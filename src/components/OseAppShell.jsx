@@ -3,25 +3,55 @@
 import { BookOpenText, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { TANAKH_BOOKS } from "@/lib/reference/books";
+import { getStaticChapterPayload } from "@/lib/scripture/static-client";
 
 const STORAGE_KEY = "ose.activeTab";
 
-export default function OseAppShell() {
-  const [activeTab, setActiveTab] = useState("search");
+export default function OseAppShell({
+  initialTab = "search",
+  initialBookId = "gen",
+  initialChapter = 1,
+  syncReaderUrl = false,
+}) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [query, setQuery] = useState("");
-  const [selectedBookId, setSelectedBookId] = useState("gen");
-  const [selectedChapter, setSelectedChapter] = useState(1);
+  const [selectedBookId, setSelectedBookId] = useState(initialBookId);
+  const [selectedChapter, setSelectedChapter] = useState(initialChapter);
 
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialTab === "bible") {
+      window.localStorage.setItem(STORAGE_KEY, "bible");
+      return;
+    }
+
     const storedTab = window.localStorage.getItem(STORAGE_KEY);
     if (storedTab === "search" || storedTab === "bible") {
       setActiveTab(storedTab);
     }
-  }, []);
+  }, [initialTab]);
+
+  function selectReaderLocation(bookId, chapter) {
+    setSelectedBookId(bookId);
+    setSelectedChapter(chapter);
+
+    if (syncReaderUrl) {
+      window.history.replaceState(null, "", `/read/${bookId}/${chapter}`);
+    }
+  }
 
   function selectTab(tab) {
     setActiveTab(tab);
     window.localStorage.setItem(STORAGE_KEY, tab);
+
+    if (syncReaderUrl && tab === "search") {
+      window.history.replaceState(null, "", "/");
+    }
   }
 
   const selectedBookMeta = useMemo(
@@ -47,8 +77,7 @@ export default function OseAppShell() {
               selectedBookId={selectedBookId}
               selectedChapter={selectedChapter}
               selectedBookMeta={selectedBookMeta}
-              setSelectedBookId={setSelectedBookId}
-              setSelectedChapter={setSelectedChapter}
+              selectReaderLocation={selectReaderLocation}
             />
           )}
         </section>
@@ -119,8 +148,7 @@ function BibleTab({
   selectedBookId,
   selectedChapter,
   selectedBookMeta,
-  setSelectedBookId,
-  setSelectedChapter,
+  selectReaderLocation,
 }) {
   const [chapter, setChapter] = useState(null);
   const [status, setStatus] = useState("idle");
@@ -131,22 +159,19 @@ function BibleTab({
     async function loadChapter() {
       setStatus("loading");
       try {
-        const response = await fetch(
-          `/api/chapter?book=${encodeURIComponent(selectedBookId)}&chapter=${selectedChapter}`,
-        );
-        const payload = await response.json();
+        const payload = await getStaticChapterPayload(selectedBookId, selectedChapter);
 
         if (!isActive) {
           return;
         }
 
-        if (!response.ok) {
+        if (!payload) {
           setChapter(null);
           setStatus("missing");
           return;
         }
 
-        setChapter(payload.chapter);
+        setChapter(payload);
         setStatus("ready");
       } catch {
         if (isActive) {
@@ -205,8 +230,10 @@ function BibleTab({
             onChange={(event) => {
               const nextBookId = event.target.value;
               const nextBook = TANAKH_BOOKS.find((book) => book.id === nextBookId);
-              setSelectedBookId(nextBookId);
-              setSelectedChapter(Math.min(selectedChapter, nextBook?.chapters ?? 1));
+              selectReaderLocation(
+                nextBookId,
+                Math.min(selectedChapter, nextBook?.chapters ?? 1),
+              );
             }}
             value={selectedBookId}
           >
@@ -224,7 +251,7 @@ function BibleTab({
           <select
             className="min-h-11 rounded-lg border border-zinc-300 bg-white px-3 text-base outline-none ring-teal-600 transition focus:ring-2"
             id="chapter-select"
-            onChange={(event) => setSelectedChapter(Number(event.target.value))}
+            onChange={(event) => selectReaderLocation(selectedBookId, Number(event.target.value))}
             value={selectedChapter}
           >
             {availableChapters.map((chapterNumber) => (
@@ -255,8 +282,7 @@ function BibleTab({
             disabled={!previousLocation}
             onClick={() => {
               if (previousLocation) {
-                setSelectedBookId(previousLocation.bookId);
-                setSelectedChapter(previousLocation.chapter);
+                selectReaderLocation(previousLocation.bookId, previousLocation.chapter);
               }
             }}
             type="button"
@@ -269,8 +295,7 @@ function BibleTab({
             disabled={!nextLocation}
             onClick={() => {
               if (nextLocation) {
-                setSelectedBookId(nextLocation.bookId);
-                setSelectedChapter(nextLocation.chapter);
+                selectReaderLocation(nextLocation.bookId, nextLocation.chapter);
               }
             }}
             type="button"

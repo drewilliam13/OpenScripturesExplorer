@@ -30,3 +30,18 @@ test("opens the mobile shell and switches tabs", async ({ page }) => {
   await expect(page.getByText("Malachi 3:24", { exact: true })).toBeVisible();
   await expect(page.getByText("And he shall turn the heart of the fathers to the children")).toBeVisible();
 });
+
+test("opens a direct reader route", async ({ page }) => {
+  await page.goto("/read/isa/53");
+
+  await expect(page.getByRole("heading", { name: "Bible Reader" })).toBeVisible();
+  await expect(page.getByText("Isaiah 53:1", { exact: true })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByLabel("Tanakh book")).toHaveValue("isa");
+  await expect(page.getByLabel("Chapter")).toHaveValue("53");
+});
+
+test("returns not found for invalid reader routes", async ({ page }) => {
+  const response = await page.goto("/read/gen/999");
+
+  expect(response?.status()).toBe(404);
+});

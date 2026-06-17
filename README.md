@@ -43,6 +43,34 @@ npm run import:tanakh
 
 Source metadata is stored in `src/data/sources.json`.
 
+The offline reader uses a generated static scripture collection under
+`public/scriptures/`. Rebuild it after changing `src/data/tanakh.json`:
+
+```bash
+npm run build:scriptures
+```
+
+The generated collection is organized as one manifest plus one JSON file per
+Tanakh book, so the mobile reader can cache only the books the user opens.
+
+## Offline Reader PWA
+
+The Bible reader loads scripture from static files instead of `/api/chapter`.
+This keeps immutable Scripture text CDN-friendly and allows loaded books to
+remain available offline after the service worker caches them.
+
+Direct reader URLs use:
+
+```text
+/read/{bookId}/{chapter}
+```
+
+Example:
+
+```text
+/read/exo/19
+```
+
 ## Local Setup
 
 ```bash
@@ -58,6 +86,7 @@ Open http://localhost:3000.
 ```bash
 npm run lint
 npm test
+npm run build:scriptures
 npm run prisma:validate
 npm run build
 ```

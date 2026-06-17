@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:scriptures": "node scripts/build-scripture-collection.mjs",
     "import:tanakh": "node scripts/import-tanakh.mjs",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
