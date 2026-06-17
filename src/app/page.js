@@ -1,5 +1,5 @@
 import OseAppShell from "@/components/OseAppShell";
 
 export default function Home() {
-  return <OseAppShell />;
+  return <OseAppShell initialTab="bible" />;
 }
