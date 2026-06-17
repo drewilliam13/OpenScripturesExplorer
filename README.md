@@ -4,12 +4,12 @@ Open Scripture Explorer is a Hebrew-first Scripture study PWA.
 
 Phase 1 is intentionally narrow:
 
-- Mobile-first Search and Bible tabs
+- Mobile-first Bible reader with a disabled Search tab reserved for Part 2
 - Hebrew-first Tanakh reader
 - JPS 1917 English translation under the Hebrew text
-- AI Scripture search that returns references only
-- Backend-verified Scripture quotations from the local database
-- Local-only search history
+- Shareable reader URLs
+- Installable PWA behavior
+- Offline access to loaded scripture books
 
 ## Current Checkpoint
 
@@ -23,7 +23,8 @@ This repository is scaffolded with:
 - Basic reference parser
 - Initial unit tests and Playwright smoke test scaffold
 
-The AI search service is not implemented yet.
+The AI search service is not implemented yet and is intentionally disabled for the
+Part 1 launch.
 
 ## Scripture Data
 
@@ -75,11 +76,41 @@ Example:
 
 ```bash
 npm install
-cp .env.example .env
+npm run build:scriptures
 npm run dev
 ```
 
 Open http://localhost:3000.
+
+Part 1 does not require local environment variables unless you are working on the
+future database or AI routes.
+
+## Hosting Part 1
+
+Deploy the app as a normal Next.js project on Vercel. Do not use GitHub Pages,
+`output: export`, or a `basePath`; direct reader routes and future server-side AI
+routes need standard Next.js hosting.
+
+Recommended Vercel settings:
+
+- Framework preset: Next.js
+- Production branch: `main`
+- Build command: `npm run build`
+- Environment variables for Part 1: none required
+
+The build script regenerates `public/scriptures/` before `next build`, so the
+deployed scripture collection stays in sync with `src/data/tanakh.json`.
+
+After deployment, test:
+
+- `/`
+- `/read/gen/1`
+- `/read/isa/53`
+- `/manifest.webmanifest`
+- `/sw.js`
+
+On mobile, open the production HTTPS URL and use Add to Home Screen. After first
+loading a book, that book should remain readable offline.
 
 ## Verification
 
@@ -99,6 +130,9 @@ npx playwright test
 ```
 
 ## Required Environment
+
+Part 1 hosting does not require these variables. They are placeholders for later
+database and AI work:
 
 ```bash
 DATABASE_URL=

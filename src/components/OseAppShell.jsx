@@ -8,7 +8,7 @@ import { getStaticChapterPayload } from "@/lib/scripture/static-client";
 const STORAGE_KEY = "ose.activeTab";
 
 export default function OseAppShell({
-  initialTab = "search",
+  initialTab = "bible",
   initialBookId = "gen",
   initialChapter = 1,
   syncReaderUrl = false,
@@ -66,7 +66,7 @@ export default function OseAppShell({
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-teal-700">
             Open Scripture Explorer
           </p>
-          <h1 className="mt-1 text-xl font-semibold">Hebrew-first Scripture search</h1>
+          <h1 className="mt-1 text-xl font-semibold">Hebrew-first Tanakh reader</h1>
         </header>
 
         <section className="min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28">
@@ -109,7 +109,7 @@ function SearchTab({ query, setQuery }) {
       <div>
         <h2 className="text-lg font-semibold">Search Scripture</h2>
         <p className="mt-1 text-sm text-zinc-600">
-          Phase 1 will return Scripture references and database-sourced quotations only.
+          AI search is planned for Part 2. Part 1 is focused on the offline reader.
         </p>
       </div>
 
@@ -136,8 +136,8 @@ function SearchTab({ query, setQuery }) {
       <section className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-5">
         <h3 className="text-sm font-semibold">Next vertical slice</h3>
         <p className="mt-2 text-sm leading-6 text-zinc-600">
-          The search service will ask OpenAI for references only, validate them against
-          local Scripture data, then show quotations from the database.
+          Future search will find Scripture references online, validate them, and
+          open the matching reader location.
         </p>
       </section>
     </div>
